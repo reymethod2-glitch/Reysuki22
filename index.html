@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>REY-AI — Your Smart Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOGIN OVERLAY (Admin) -->
+<div id="loginOverlay" class="login-overlay hidden">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-circle"><span>R</span></div>
+    </div>
+    <h2>Admin Access</h2>
+    <p>Masukkan password admin untuk lanjut</p>
+    <input type="password" id="adminPassword" placeholder="Password admin..." autocomplete="off">
+    <div id="loginError" class="login-error hidden">Password salah!</div>
+    <div class="login-btns">
+      <button onclick="doAdminLogin()">Login</button>
+      <button class="btn-cancel" onclick="closeLogin()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div class="app-logo">
+      <div class="logo-icon"><span>R</span></div>
+      <div class="app-name">REY<span>-AI</span></div>
+    </div>
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+  </div>
+
+  <!-- User Badge -->
+  <div class="user-badge" onclick="handleUserBadgeClick()">
+    <div class="user-avatar" id="userAvatarIcon">👤</div>
+    <div class="user-info">
+      <div class="user-name" id="userNameLabel">Guest</div>
+      <div class="user-role" id="userRoleLabel">Klik untuk login admin</div>
+    </div>
+    <div class="badge-arrow">›</div>
+  </div>
+
+  <!-- Nav Menu -->
+  <nav class="sidebar-nav">
+    <div class="nav-label">AI Models</div>
+    <a href="index.html" class="nav-item active" data-page="chatgpt">
+      <span class="nav-icon"></span>
+      <span>ChatGPT</span>
+      <span class="nav-tag">GPT</span>
+    </a>
+    <a href="gemini.html" class="nav-item" data-page="gemini">
+      <span class="nav-icon"></span>
+      <span>WORMGPT</span>
+      <span class="nav-tag">Google</span>
+    </a>
+    <a href="special.html" class="nav-item" data-page="special">
+      <span class="nav-icon"></span>
+      <span>REY Special</span>
+      <span class="nav-tag admin-tag">Admin</span>
+    </a>
+    <div class="nav-label" style="margin-top:16px">Tools</div>
+    <a href="youtube.html" class="nav-item" data-page="youtube">
+      <span class="nav-icon"></span>
+      <span>YouTube Player</span>
+    </a>
+    <a href="pinterest.html" class="nav-item" data-page="pinterest">
+      <span class="nav-icon"></span>
+      <span>Pinterest Search</span>
+    </a>
+    <a href="tiktok.html" class="nav-item" data-page="tiktok">
+      <span class="nav-icon"></span>
+      <span>TikTok Download</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span>REY-AI v2.0</span>
+    <span id="adminBadge" class="admin-footer-badge hidden">⚙️ Admin</span>
+  </div>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+<!-- MAIN APP -->
+<div class="app-container" id="appContainer">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-title">
+      <div class="ai-avatar-small"></div>
+      <div>
+        <div class="ai-name">REY-AI <span class="model-badge">Zero</span></div>
+        <div class="ai-status"><span class="status-dot"></span>Online</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="resetChat()" title="Reset Chat">🗑️</button>
+    </div>
+  </header>
+
+  <!-- CHAT AREA -->
+  <main class="chat-area" id="chatArea">
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-logo">
+        <div class="welcome-logo-ring">
+          <div class="logo-big">R</div>
+        </div>
+        <div class="welcome-glow"></div>
+      </div>
+      <h1>REY-AI</h1>
+      <p>Asisten AI pintar siap membantu kamu kapan saja</p>
+      <div class="suggestion-chips">
+        <button onclick="sendSuggestion('Halo! Siapa kamu?')">👋 Siapa kamu?</button>
+        <button onclick="sendSuggestion('Buatkan kode Python sederhana')">💻 Kode Python</button>
+        <button onclick="sendSuggestion('Ceritakan tentang AI terbaru 2026')">🤖 AI 2026</button>
+        <button onclick="sendSuggestion('Bantuin bikin caption Instagram keren')">✍️ Caption IG</button>
+      </div>
+    </div>
+    <div id="messages"></div>
+  </main>
+
+  <!-- INPUT AREA -->
+  <footer class="input-area">
+    <div class="input-wrapper">
+      <textarea id="userInput" placeholder="Ketik pesan..." rows="1" 
+        onkeydown="handleKeydown(event)" 
+        oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="input-hint">Enter kirim · Shift+Enter baris baru</div>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+  initApp('chatgpt');
+</script>
+</body>
+</html>
