@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>REY-AI — YouTube Player</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay hidden">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-circle"><span>R</span></div></div>
+    <h2>Admin Access</h2>
+    <p>Masukkan password admin</p>
+    <input type="password" id="adminPassword" placeholder="Password admin..." autocomplete="off">
+    <div id="loginError" class="login-error hidden">Password salah!</div>
+    <div class="login-btns">
+      <button onclick="doAdminLogin()">Login</button>
+      <button class="btn-cancel" onclick="closeLogin()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div class="app-logo">
+      <div class="logo-icon"><span>R</span></div>
+      <div class="app-name">REY<span>-AI</span></div>
+    </div>
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="user-badge" onclick="handleUserBadgeClick()">
+    <div class="user-avatar" id="userAvatarIcon">👤</div>
+    <div class="user-info">
+      <div class="user-name" id="userNameLabel">Guest</div>
+      <div class="user-role" id="userRoleLabel">Klik untuk login admin</div>
+    </div>
+    <div class="badge-arrow">›</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">AI Models</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🤖</span><span>ChatGPT</span><span class="nav-tag">GPT</span></a>
+    <a href="gemini.html" class="nav-item"><span class="nav-icon">✨</span><span>Gemini</span><span class="nav-tag">Google</span></a>
+    <a href="special.html" class="nav-item"><span class="nav-icon">⚡</span><span>REY Special</span><span class="nav-tag admin-tag">Admin</span></a>
+    <div class="nav-label" style="margin-top:16px">Tools</div>
+    <a href="youtube.html" class="nav-item active"><span class="nav-icon">▶️</span><span>YouTube Player</span></a>
+    <a href="pinterest.html" class="nav-item"><span class="nav-icon">📌</span><span>Pinterest Search</span></a>
+    <a href="tiktok.html" class="nav-item"><span class="nav-icon">🎵</span><span>TikTok Download</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span>REY-AI v2.0</span>
+    <span id="adminBadge" class="admin-footer-badge hidden">⚙️ Admin</span>
+  </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+<div class="app-container" id="appContainer">
+  <header class="topbar yt-topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+    <div class="topbar-title">
+      <div class="ai-avatar-small">▶️</div>
+      <div>
+        <div class="ai-name">YouTube <span class="model-badge yt-badge">Player</span></div>
+        <div class="ai-status"><span class="status-dot yt-dot"></span>Ready</div>
+      </div>
+    </div>
+    <div class="topbar-actions"></div>
+  </header>
+
+  <main class="tool-area" id="ytArea">
+    <!-- Search -->
+    <div class="tool-search-bar">
+      <input type="text" id="ytSearchInput" placeholder="🔍 Cari lagu atau video..." 
+        onkeydown="if(event.key==='Enter') searchYoutube()">
+      <button onclick="searchYoutube()">Cari</button>
+    </div>
+
+    <!-- Now Playing -->
+    <div id="nowPlaying" class="now-playing hidden">
+      <div class="now-playing-label">▶ Sekarang Diputar</div>
+      <div class="now-playing-title" id="nowTitle">—</div>
+      <div class="yt-player-wrap">
+        <iframe id="ytPlayer" src="" frameborder="0" allowfullscreen
+          allow="autoplay; encrypted-media"></iframe>
+      </div>
+      <div class="yt-actions">
+        <a id="dlAudioBtn" href="#" target="_blank" class="yt-dl-btn audio-btn">🎵 Download Audio</a>
+        <a id="dlVideoBtn" href="#" target="_blank" class="yt-dl-btn video-btn">🎬 Download Video</a>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="ytResults" class="yt-results"></div>
+    <div id="ytEmpty" class="tool-empty">
+      <div class="empty-icon">▶️</div>
+      <h3>YouTube Player</h3>
+      <p>Ketik judul lagu atau video, tekan Enter atau klik Cari</p>
+    </div>
+    <div id="ytLoading" class="tool-loading hidden">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <p>Mencari...</p>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+initApp('youtube');
+
+async function searchYoutube() {
+  const q = document.getElementById('ytSearchInput').value.trim();
+  if (!q) return;
+  const results = document.getElementById('ytResults');
+  const loading = document.getElementById('ytLoading');
+  const empty = document.getElementById('ytEmpty');
+  results.innerHTML = '';
+  empty.classList.add('hidden');
+  loading.classList.remove('hidden');
+  try {
+    const res = await fetch(`https://v2.api-varhad.my.id/search/youtube?query=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    loading.classList.add('hidden');
+    const items = data.result || data.data || data || [];
+    if (!items.length) {
+      empty.classList.remove('hidden');
+      empty.querySelector('p').textContent = 'Tidak ada hasil ditemukan.';
+      return;
+    }
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'yt-card';
+      const thumb = item.thumbnail || item.thumbnails?.[0]?.url || '';
+      const title = item.title || item.name || 'Video';
+      const channel = item.channel?.name || item.author || '';
+      const dur = item.duration?.timestamp || item.duration || '';
+      const vidId = item.id || item.videoId || extractYtId(item.url || '');
+      card.innerHTML = `
+        <div class="yt-thumb" onclick="playVideo('${vidId}', ${JSON.stringify(title).replace(/'/g,"\\'")})" style="cursor:pointer">
+          <img src="${thumb}" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect fill=%22%23eee%22 width=%2216%22 height=%229%22/></svg>'">
+          <div class="yt-play-overlay">▶</div>
+          ${dur ? `<div class="yt-dur">${dur}</div>` : ''}
+        </div>
+        <div class="yt-info">
+          <div class="yt-title" onclick="playVideo('${vidId}', ${JSON.stringify(title).replace(/'/g,"\\'")})">${title}</div>
+          ${channel ? `<div class="yt-channel">${channel}</div>` : ''}
+          <div class="yt-card-actions">
+            <button onclick="playVideo('${vidId}', ${JSON.stringify(title).replace(/'/g,"\\'")})" class="play-btn">▶ Play</button>
+          </div>
+        </div>`;
+      results.appendChild(card);
+    });
+  } catch(e) {
+    loading.classList.add('hidden');
+    empty.classList.remove('hidden');
+    empty.querySelector('p').textContent = 'Gagal mengambil data. Coba lagi.';
+  }
+}
+
+function extractYtId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/)([^&?]+)/);
+  return m ? m[1] : url;
+}
+
+function playVideo(videoId, title) {
+  const np = document.getElementById('nowPlaying');
+  const iframe = document.getElementById('ytPlayer');
+  document.getElementById('nowTitle').textContent = title;
+  iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+  document.getElementById('dlAudioBtn').href = `https://www.y2mate.com/youtube-mp3/${videoId}`;
+  document.getElementById('dlVideoBtn').href = `https://www.y2mate.com/youtube/${videoId}`;
+  np.classList.remove('hidden');
+  np.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
