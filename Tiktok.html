@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>REY-AI — TikTok Downloader</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay hidden">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-circle"><span>R</span></div></div>
+    <h2>Admin Access</h2>
+    <input type="password" id="adminPassword" placeholder="Password admin..." autocomplete="off">
+    <div id="loginError" class="login-error hidden">Password salah!</div>
+    <div class="login-btns">
+      <button onclick="doAdminLogin()">Login</button>
+      <button class="btn-cancel" onclick="closeLogin()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div class="app-logo"><div class="logo-icon"><span>R</span></div><div class="app-name">REY<span>-AI</span></div></div>
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="user-badge" onclick="handleUserBadgeClick()">
+    <div class="user-avatar" id="userAvatarIcon">👤</div>
+    <div class="user-info"><div class="user-name" id="userNameLabel">Guest</div><div class="user-role" id="userRoleLabel">Klik untuk login admin</div></div>
+    <div class="badge-arrow">›</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">AI Models</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🤖</span><span>ChatGPT</span><span class="nav-tag">GPT</span></a>
+    <a href="gemini.html" class="nav-item"><span class="nav-icon">✨</span><span>Gemini</span><span class="nav-tag">Google</span></a>
+    <a href="special.html" class="nav-item"><span class="nav-icon">⚡</span><span>REY Special</span><span class="nav-tag admin-tag">Admin</span></a>
+    <div class="nav-label" style="margin-top:16px">Tools</div>
+    <a href="youtube.html" class="nav-item"><span class="nav-icon">▶️</span><span>YouTube Player</span></a>
+    <a href="pinterest.html" class="nav-item"><span class="nav-icon">📌</span><span>Pinterest Search</span></a>
+    <a href="tiktok.html" class="nav-item active"><span class="nav-icon">🎵</span><span>TikTok Download</span></a>
+  </nav>
+  <div class="sidebar-footer"><span>REY-AI v2.0</span><span id="adminBadge" class="admin-footer-badge hidden">⚙️ Admin</span></div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+<div class="app-container" id="appContainer">
+  <header class="topbar tt-topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+    <div class="topbar-title">
+      <div class="ai-avatar-small">🎵</div>
+      <div>
+        <div class="ai-name">TikTok <span class="model-badge tt-badge">Downloader</span></div>
+        <div class="ai-status"><span class="status-dot tt-dot"></span>Ready</div>
+      </div>
+    </div>
+    <div class="topbar-actions"></div>
+  </header>
+
+  <main class="tool-area">
+    <div class="tt-hero">
+      <div class="tt-icon-big">🎵</div>
+      <h2>TikTok Downloader</h2>
+      <p>Download video TikTok tanpa watermark — cepat & gratis</p>
+    </div>
+
+    <div class="tt-input-wrap">
+      <input type="url" id="ttUrlInput" placeholder="Paste link TikTok di sini...
+contoh: https://vt.tiktok.com/xxx atau https://www.tiktok.com/@user/video/xxx">
+      <button onclick="downloadTiktok()">
+        <span id="ttBtnText">⬇ Download</span>
+      </button>
+    </div>
+    <div id="ttError" class="tt-error hidden"></div>
+
+    <div id="ttLoading" class="tool-loading hidden">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <p>Memproses video...</p>
+    </div>
+
+    <div id="ttResult" class="tt-result hidden">
+      <div class="tt-result-inner">
+        <div class="tt-thumb-wrap">
+          <img id="ttThumb" src="" alt="">
+          <video id="ttPreview" controls class="hidden"></video>
+        </div>
+        <div class="tt-meta">
+          <div class="tt-author" id="ttAuthor"></div>
+          <div class="tt-caption" id="ttCaption"></div>
+        </div>
+        <div class="tt-dl-buttons">
+          <a id="ttDlNoWM" href="#" target="_blank" class="yt-dl-btn video-btn">🎬 Video No Watermark</a>
+          <a id="ttDlAudio" href="#" target="_blank" class="yt-dl-btn audio-btn">🎵 Audio MP3</a>
+          <a id="ttDlWM" href="#" target="_blank" class="yt-dl-btn" style="background:#f1f5f9;color:#64748b">📹 Video + Watermark</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="tt-tips">
+      <h4>Cara Download:</h4>
+      <ol>
+        <li>Buka TikTok, klik share → <strong>Copy Link</strong></li>
+        <li>Paste link di kolom di atas</li>
+        <li>Klik Download dan pilih format</li>
+      </ol>
+    </div>
+  </main>
+</div>
+
+<script src="app.js"></script>
+<script>
+initApp('tiktok');
+
+async function downloadTiktok() {
+  const url = document.getElementById('ttUrlInput').value.trim();
+  if (!url) return;
+  if (!url.includes('tiktok.com') && !url.includes('vt.tiktok.com')) {
+    showTTError('Link tidak valid. Pastikan link dari TikTok.');
+    return;
+  }
+  const loading = document.getElementById('ttLoading');
+  const result = document.getElementById('ttResult');
+  const errEl = document.getElementById('ttError');
+  const btnText = document.getElementById('ttBtnText');
+  result.classList.add('hidden');
+  errEl.classList.add('hidden');
+  loading.classList.remove('hidden');
+  btnText.textContent = 'Memproses...';
+  try {
+    const res = await fetch(`https://api-varhad.my.id/download/tt?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    loading.classList.add('hidden');
+    btnText.textContent = '⬇ Download';
+    const d = data.result || data.data || data;
+    if (!d) { showTTError('Gagal mengambil data. Coba lagi.'); return; }
+    const noWM = d.video?.noWatermark || d.nowm || d.video_no_watermark || d.play || '';
+    const wm   = d.video?.watermark   || d.wm   || d.video_watermark   || d.wmplay || noWM;
+    const audio = d.music?.playUrl    || d.music || d.audio || '';
+    const thumb = d.cover || d.thumbnail || d.originCover || '';
+    const author = d.author?.nickname || d.author?.uniqueId || d.author || '';
+    const caption = d.desc || d.title || '';
+    if (thumb) { document.getElementById('ttThumb').src = thumb; document.getElementById('ttThumb').classList.remove('hidden'); }
+    document.getElementById('ttAuthor').textContent = author ? `@${author}` : '';
+    document.getElementById('ttCaption').textContent = caption;
+    if (noWM) { document.getElementById('ttDlNoWM').href = noWM; document.getElementById('ttDlNoWM').classList.remove('hidden'); }
+    else document.getElementById('ttDlNoWM').classList.add('hidden');
+    if (audio) { document.getElementById('ttDlAudio').href = audio; document.getElementById('ttDlAudio').classList.remove('hidden'); }
+    else document.getElementById('ttDlAudio').classList.add('hidden');
+    if (wm) { document.getElementById('ttDlWM').href = wm; document.getElementById('ttDlWM').classList.remove('hidden'); }
+    else document.getElementById('ttDlWM').classList.add('hidden');
+    result.classList.remove('hidden');
+  } catch(e) {
+    loading.classList.add('hidden');
+    btnText.textContent = '⬇ Download';
+    showTTError('Terjadi kesalahan. Pastikan link benar dan coba lagi.');
+  }
+}
+function showTTError(msg) {
+  const el = document.getElementById('ttError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+</script>
+</body>
+</html>
