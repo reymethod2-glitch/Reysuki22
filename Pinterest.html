@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>REY-AI — Pinterest</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay hidden">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-circle"><span>R</span></div></div>
+    <h2>Admin Access</h2>
+    <input type="password" id="adminPassword" placeholder="Password admin..." autocomplete="off">
+    <div id="loginError" class="login-error hidden">Password salah!</div>
+    <div class="login-btns">
+      <button onclick="doAdminLogin()">Login</button>
+      <button class="btn-cancel" onclick="closeLogin()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div class="app-logo"><div class="logo-icon"><span>R</span></div><div class="app-name">REY<span>-AI</span></div></div>
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="user-badge" onclick="handleUserBadgeClick()">
+    <div class="user-avatar" id="userAvatarIcon">👤</div>
+    <div class="user-info"><div class="user-name" id="userNameLabel">Guest</div><div class="user-role" id="userRoleLabel">Klik untuk login admin</div></div>
+    <div class="badge-arrow">›</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">AI Models</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🤖</span><span>ChatGPT</span><span class="nav-tag">GPT</span></a>
+    <a href="gemini.html" class="nav-item"><span class="nav-icon">✨</span><span>Gemini</span><span class="nav-tag">Google</span></a>
+    <a href="special.html" class="nav-item"><span class="nav-icon">⚡</span><span>REY Special</span><span class="nav-tag admin-tag">Admin</span></a>
+    <div class="nav-label" style="margin-top:16px">Tools</div>
+    <a href="youtube.html" class="nav-item"><span class="nav-icon">▶️</span><span>YouTube Player</span></a>
+    <a href="pinterest.html" class="nav-item active"><span class="nav-icon">📌</span><span>Pinterest Search</span></a>
+    <a href="tiktok.html" class="nav-item"><span class="nav-icon">🎵</span><span>TikTok Download</span></a>
+  </nav>
+  <div class="sidebar-footer"><span>REY-AI v2.0</span><span id="adminBadge" class="admin-footer-badge hidden">⚙️ Admin</span></div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+<div class="app-container" id="appContainer">
+  <header class="topbar pin-topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+    <div class="topbar-title">
+      <div class="ai-avatar-small">📌</div>
+      <div>
+        <div class="ai-name">Pinterest <span class="model-badge pin-badge">Search</span></div>
+        <div class="ai-status"><span class="status-dot pin-dot"></span>Ready</div>
+      </div>
+    </div>
+    <div class="topbar-actions"></div>
+  </header>
+
+  <main class="tool-area">
+    <div class="tool-search-bar">
+      <input type="text" id="pinSearchInput" placeholder="🔍 Cari gambar Pinterest..."
+        onkeydown="if(event.key==='Enter') searchPinterest()">
+      <button onclick="searchPinterest()">Cari</button>
+    </div>
+    <div id="pinLoading" class="tool-loading hidden">
+      <div class="loader-dots"><span></span><span></span><span></span></div>
+      <p>Mencari gambar...</p>
+    </div>
+    <div id="pinResults" class="pin-grid"></div>
+    <div id="pinEmpty" class="tool-empty">
+      <div class="empty-icon">📌</div>
+      <h3>Pinterest Search</h3>
+      <p>Ketik kata kunci dan temukan inspirasi gambar dari Pinterest</p>
+    </div>
+  </main>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox hidden" onclick="closeLightbox()">
+  <div class="lightbox-inner" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightboxImg" src="" alt="">
+    <div class="lightbox-actions">
+      <a id="lightboxDl" href="#" download target="_blank" class="yt-dl-btn">⬇ Download</a>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+initApp('pinterest');
+
+async function searchPinterest() {
+  const q = document.getElementById('pinSearchInput').value.trim();
+  if (!q) return;
+  const grid = document.getElementById('pinResults');
+  const loading = document.getElementById('pinLoading');
+  const empty = document.getElementById('pinEmpty');
+  grid.innerHTML = '';
+  empty.classList.add('hidden');
+  loading.classList.remove('hidden');
+  try {
+    const res = await fetch(`https://api-varhad.my.id/search/pinterest?query=${encodeURIComponent(q)}`);
+    const data = await res.json();
+    loading.classList.add('hidden');
+    const items = data.result || data.data || data || [];
+    if (!Array.isArray(items) || !items.length) {
+      empty.classList.remove('hidden');
+      empty.querySelector('p').textContent = 'Tidak ada gambar ditemukan.';
+      return;
+    }
+    items.forEach(item => {
+      const imgUrl = item.images?.orig?.url || item.image || item.url || item.imageUrl || '';
+      if (!imgUrl) return;
+      const card = document.createElement('div');
+      card.className = 'pin-card';
+      card.innerHTML = `<img src="${imgUrl}" alt="${item.title || ''}" loading="lazy" 
+        onerror="this.parentElement.style.display='none'"
+        onclick="openLightbox('${imgUrl.replace(/'/g,"\\'")}')">`;
+      grid.appendChild(card);
+    });
+    if (!grid.children.length) {
+      empty.classList.remove('hidden');
+      empty.querySelector('p').textContent = 'Tidak ada gambar valid ditemukan.';
+    }
+  } catch(e) {
+    loading.classList.add('hidden');
+    empty.classList.remove('hidden');
+    empty.querySelector('p').textContent = 'Gagal mengambil data. Coba lagi.';
+  }
+}
+
+function openLightbox(url) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxDl').href = url;
+  document.getElementById('lightbox').classList.remove('hidden');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.add('hidden');
+  document.getElementById('lightboxImg').src = '';
+}
+</script>
+</body>
+</html>
