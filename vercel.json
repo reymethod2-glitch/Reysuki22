@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "**/*.html", "use": "@vercel/static" },
+    { "src": "**/*.js", "use": "@vercel/static" },
+    { "src": "**/*.css", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/gemini", "dest": "/gemini.html" },
+    { "src": "/special", "dest": "/special.html" },
+    { "src": "/youtube", "dest": "/youtube.html" },
+    { "src": "/pinterest", "dest": "/pinterest.html" },
+    { "src": "/tiktok", "dest": "/tiktok.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
