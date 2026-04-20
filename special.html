@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>REY-AI — Special AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay hidden">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-circle"><span>R</span></div></div>
+    <h2>Admin Access</h2>
+    <p>Masukkan password admin untuk lanjut</p>
+    <input type="password" id="adminPassword" placeholder="Password admin..." autocomplete="off">
+    <div id="loginError" class="login-error hidden">Password salah!</div>
+    <div class="login-btns">
+      <button onclick="doAdminLogin()">Login</button>
+      <button class="btn-cancel" onclick="closeLogin()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Settings Panel -->
+<div id="settingsPanel" class="settings-panel hidden">
+  <div class="settings-header">
+    <h3>⚙️ Pengaturan AI Special</h3>
+    <button onclick="closeSettings()">✕</button>
+  </div>
+  <div class="settings-body">
+    <label>Nama AI</label>
+    <input type="text" id="aiNameInput" placeholder="Nama AI kamu..." value="REY Special">
+    
+    <label>Kepribadian / System Prompt</label>
+    <textarea id="systemPromptInput" rows="8" placeholder="Deskripsikan kepribadian AI kamu di sini...
+Contoh: Kamu adalah asisten bernama Alex yang ceria, suka bercanda tapi tetap helpful. Kamu suka pakai bahasa gaul Indonesia..."></textarea>
+
+    <label>Upload Foto Profil AI</label>
+    <div class="file-upload-box" onclick="document.getElementById('aiAvatarFile').click()">
+      <img id="aiAvatarPreview" src="" alt="" class="hidden">
+      <div id="uploadPlaceholder">📸 Klik untuk upload foto</div>
+      <input type="file" id="aiAvatarFile" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+    </div>
+
+    <label>Warna Tema Chat</label>
+    <div class="color-options">
+      <div class="color-opt" style="background:#7C3AED" onclick="setThemeColor('#7C3AED','#EDE9FE')" title="Ungu"></div>
+      <div class="color-opt" style="background:#0EA5E9" onclick="setThemeColor('#0EA5E9','#E0F2FE')" title="Biru"></div>
+      <div class="color-opt" style="background:#10B981" onclick="setThemeColor('#10B981','#D1FAE5')" title="Hijau"></div>
+      <div class="color-opt" style="background:#F59E0B" onclick="setThemeColor('#F59E0B','#FEF3C7')" title="Kuning"></div>
+      <div class="color-opt" style="background:#EF4444" onclick="setThemeColor('#EF4444','#FEE2E2')" title="Merah"></div>
+      <div class="color-opt" style="background:#EC4899" onclick="setThemeColor('#EC4899','#FCE7F3')" title="Pink"></div>
+    </div>
+
+    <label>Custom Background Chat</label>
+    <div class="bg-options">
+      <div class="bg-opt active" onclick="setBg('default')" title="Default">☁️ Default</div>
+      <div class="bg-opt" onclick="setBg('dots')" title="Dots">⚬ Dots</div>
+      <div class="bg-opt" onclick="setBg('grid')" title="Grid">⊞ Grid</div>
+      <div class="bg-opt" onclick="setBg('wave')" title="Wave">〜 Wave</div>
+    </div>
+    <div class="file-upload-box small" onclick="document.getElementById('bgFile').click()" style="margin-top:8px">
+      <div>📁 Upload background sendiri</div>
+      <input type="file" id="bgFile" accept="image/*" class="hidden" onchange="handleBgUpload(event)">
+    </div>
+
+    <button class="save-settings-btn" onclick="saveSettings()">💾 Simpan Pengaturan</button>
+  </div>
+</div>
+<div id="settingsOverlay" class="sidebar-overlay hidden" onclick="closeSettings()"></div>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <div class="app-logo">
+      <div class="logo-icon"><span>R</span></div>
+      <div class="app-name">REY<span>-AI</span></div>
+    </div>
+    <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="user-badge" onclick="handleUserBadgeClick()">
+    <div class="user-avatar" id="userAvatarIcon">👤</div>
+    <div class="user-info">
+      <div class="user-name" id="userNameLabel">Guest</div>
+      <div class="user-role" id="userRoleLabel">Klik untuk login admin</div>
+    </div>
+    <div class="badge-arrow">›</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">AI Models</div>
+    <a href="index.html" class="nav-item"><span class="nav-icon"></span><span>ChatGPT</span><span class="nav-tag">GPT</span></a>
+    <a href="gemini.html" class="nav-item"><span class="nav-icon"></span><span>Gemini</span><span class="nav-tag">Google</span></a>
+    <a href="special.html" class="nav-item active"><span class="nav-icon"></span><span>REY Special</span><span class="nav-tag admin-tag">Admin</span></a>
+    <div class="nav-label" style="margin-top:16px">Tools</div>
+    <a href="youtube.html" class="nav-item"><span class="nav-icon"></span><span>YouTube Player</span></a>
+    <a href="pinterest.html" class="nav-item"><span class="nav-icon"></span><span>Pinterest Search</span></a>
+    <a href="tiktok.html" class="nav-item"><span class="nav-icon"></span><span>TikTok Download</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span>REY-AI v2.0</span>
+    <span id="adminBadge" class="admin-footer-badge hidden">⚙️ Admin</span>
+  </div>
+</div>
+<div id="sidebarOverlay" class="sidebar-overlay hidden" onclick="toggleSidebar()"></div>
+
+<!-- ADMIN LOCK SCREEN -->
+<div id="adminLockScreen" class="admin-lock-screen hidden">
+  <div class="lock-content">
+    <div class="lock-icon">🔒</div>
+    <h2>REY Special</h2>
+    <p>Fitur ini khusus untuk admin.<br>Login dulu ya!</p>
+    <button onclick="openLogin()">Login Admin</button>
+    <a href="index.html" class="back-link">← Kembali ke Chat</a>
+  </div>
+</div>
+
+<div class="app-container" id="appContainer">
+  <header class="topbar special-topbar">
+    <button class="menu-btn" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+    <div class="topbar-title">
+      <div class="ai-avatar-small special-avatar" id="topbarAvatar">⚡</div>
+      <div>
+        <div class="ai-name" id="topbarAiName">REY Special <span class="model-badge special-badge">Custom</span></div>
+        <div class="ai-status"><span class="status-dot special-dot"></span>Online</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn admin-only-btn hidden" id="settingsBtn" onclick="openSettings()" title="Pengaturan AI">⚙️</button>
+      <button class="icon-btn" onclick="resetChat()" title="Reset Chat">🗑️</button>
+    </div>
+  </header>
+
+  <main class="chat-area" id="chatArea">
+    <div class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-logo special-welcome">
+        <div class="welcome-logo-ring special-ring">
+          <div class="logo-big" id="welcomeAvatarText">⚡</div>
+        </div>
+        <div class="welcome-glow special-glow"></div>
+      </div>
+      <h1 id="welcomeAiName">REY Special</h1>
+      <p id="welcomeDesc">AI dengan kepribadian custom — diatur oleh admin</p>
+      <div class="suggestion-chips" id="specialChips">
+        <button onclick="sendSuggestion('Halo! Perkenalkan dirimu')">👋 Perkenalan</button>
+        <button onclick="sendSuggestion('Apa yang bisa kamu lakukan?')">💡 Kemampuan</button>
+      </div>
+    </div>
+    <div id="messages"></div>
+  </main>
+
+  <footer class="input-area">
+    <div class="input-wrapper">
+      <textarea id="userInput" placeholder="Ngobrol dengan REY Special..." rows="1"
+        onkeydown="handleKeydown(event)"
+        oninput="autoResize(this)"></textarea>
+      <button class="send-btn special-send" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="input-hint">Enter kirim · Shift+Enter baris baru</div>
+  </footer>
+</div>
+
+<script src="app.js"></script>
+<script>initApp('special');</script>
+</body>
+</html>
